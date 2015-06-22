@@ -182,7 +182,7 @@ public abstract class QueueApi {
      *            {@link #ORPHAN_MESSAGE_POLICY_REQUEUE}
      * @return
      */
-    public QueueApi setOrphanMessageThresholdMs(int orphanMessagePolicy) {
+    public QueueApi setOrphanMessagePolicy(int orphanMessagePolicy) {
         this.orphanMessagePolicy = orphanMessagePolicy;
         return this;
     }
