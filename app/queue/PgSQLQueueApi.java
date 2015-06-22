@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import play.Logger;
 
 /**
- * MySQL-Specific {@link JdbcQueueApi}.
+ * PostgreSQL-Specific {@link JdbcQueueApi}.
  * 
  * <p>
  * Table schema:
@@ -18,27 +18,27 @@ import play.Logger;
  * 
  * <pre>
  * CREATE TABLE queue (
- *   queue_id                    BIGINT              AUTO_INCREMENT,
- *       PRIMARY KEY (queue_id),
- *   msg_org_timestamp           DATETIME            NOT NULL,
- *   msg_timestamp               DATETIME            NOT NULL,
- *   msg_num_requeues            INT                 NOT NULL DEFAULT 0,
- *   msg_content                 LONGBLOB
- * ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+ *     queue_id                    BIGSERIAL,
+ *     msg_org_timestamp           TIMESTAMP           NOT NULL,
+ *     msg_timestamp               TIMESTAMP           NOT NULL,
+ *     msg_num_requeues            INT                 NOT NULL DEFAULT 0,
+ *     msg_content                 BYTEA,
+ *     PRIMARY KEY (queue_id)
+ * );
  * CREATE TABLE queue_ephemeral (
- *   queue_id                    BIGINT,
- *       PRIMARY KEY (queue_id),
- *   msg_org_timestamp           DATETIME            NOT NULL,
- *   msg_timestamp               DATETIME            NOT NULL,
- *   msg_num_requeues            INT                 NOT NULL DEFAULT 0,
- *   msg_content                 LONGBLOB
- * ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+ *     queue_id                    BIGINT,
+ *     msg_org_timestamp           TIMESTAMP           NOT NULL,
+ *     msg_timestamp               TIMESTAMP           NOT NULL,
+ *     msg_num_requeues            INT                 NOT NULL DEFAULT 0,
+ *     msg_content                 BYTEA,
+ *     PRIMARY KEY (queue_id)
+ * );
  * </pre>
  * 
  * @author Thanh Nguyen <btnguyen2k@gmail.com>
- * @since 0.1.0
+ * @since 0.2.0
  */
-public class MySQLQueueApi extends JdbcQueueApi {
+public class PgSQLQueueApi extends JdbcQueueApi {
 
     /**
      * {@inheritDoc}
@@ -54,18 +54,16 @@ public class MySQLQueueApi extends JdbcQueueApi {
             Connection conn = connection();
             try {
                 conn.setAutoCommit(true);
-                final String SQL_CREATE_QUEUE = "CREATE TABLE {0} (queue_id BIGINT AUTO_INCREMENT, PRIMARY KEY (queue_id),"
-                        + "msg_org_timestamp DATETIME NOT NULL,"
-                        + "msg_timestamp DATETIME NOT NULL,"
-                        + "msg_num_requeues INT NOT NULL DEFAULT 0,"
-                        + "msg_content LONGBLOB)"
-                        + "ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci";
-                final String SQL_CREATE_EPHEMERAL = "CREATE TABLE {0} (queue_id BIGINT, PRIMARY KEY (queue_id),"
-                        + "msg_org_timestamp DATETIME NOT NULL,"
-                        + "msg_timestamp DATETIME NOT NULL,"
-                        + "msg_num_requeues INT NOT NULL DEFAULT 0,"
-                        + "msg_content LONGBLOB)"
-                        + "ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci";
+                final String SQL_CREATE_QUEUE = "CREATE TABLE {0} (queue_id BIGSERIAL,"
+                        + "msg_org_timestamp TIMESTAMP NOT NULL,"
+                        + "msg_timestamp TIMESTAMP NOT NULL,"
+                        + "msg_num_requeues INT NOT NULL DEFAULT 0," + "msg_content BYTEA,"
+                        + "PRIMARY KEY (queue_id))";
+                final String SQL_CREATE_EPHEMERAL = "CREATE TABLE {0} (queue_id BIGINT"
+                        + "msg_org_timestamp TIMESTAMP NOT NULL,"
+                        + "msg_timestamp TIMESTAMP NOT NULL,"
+                        + "msg_num_requeues INT NOT NULL DEFAULT 0," + "msg_content BYTEA,"
+                        + "PRIMARY KEY (queue_id))";
                 JdbcTemplate jdbcTemplate = jdbcTemplate(conn);
                 try {
                     String tableName = "queue_" + normalizedQueueName;

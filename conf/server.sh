@@ -1,15 +1,16 @@
 #!/bin/bash
 
-# ------------------------- #
-# Start/Stop script on *NIX #
-# ------------------------- #
-# Command-line arguments:   #
-# -p <http_port>            #
-# -t <thrift_port>          #
-# -m <mem in mb>            #
-# -c <config_file.conf>     #
-# -j "extra-jvm-options"    #
-# ------------------------- #
+# -------------------------------- #
+# Start/Stop script on *NIX        #
+# -------------------------------- #
+# Command-line arguments:          #
+# -p <http_port>                   #
+# -t <thrift_port>                 #
+# -m <mem in mb>                   #
+# -c <config_file.conf>            #
+# -s <spring_config_file.conf>     #
+# -j "extra-jvm-options"           #
+# -------------------------------- #
 
 # from http://stackoverflow.com/questions/242538/unix-shell-script-find-out-which-directory-the-script-file-resides
 pushd $(dirname "${0}") > /dev/null
@@ -24,11 +25,13 @@ DEFAULT_APP_PORT=8080
 DEFAULT_THRIFT_PORT=9090
 DEFAULT_APP_MEM=64
 DEFAULT_APP_CONF=application.conf
+DEFAULT_APP_SPRING_CONF=spring/beans.xml
 
 APP_PORT=$DEFAULT_APP_PORT
 THRIFT_PORT=$DEFAULT_THRIFT_PORT
 APP_MEM=$DEFAULT_APP_MEM
 APP_CONF=$DEFAULT_APP_CONF
+APP_SPRING_CONF=$DEFAULT_APP_SPRING_CONF
 
 JVM_EXTRA_OPS=
 
@@ -73,7 +76,18 @@ doStart() {
     
     RUN_CMD=($APP_HOME/bin/$APP_NAME -Dapp.home=$APP_HOME -Dthrift.port=$THRIFT_PORT -Dhttp.port=$APP_PORT -Dhttp.address=0.0.0.0)
     RUN_CMD+=(-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -J-server -mem $APP_MEM)
-    RUN_CMD+=(-Dspring.profiles.active=development -Dconfig.file=$APP_HOME/conf/$APP_CONF)
+    RUN_CMD+=(-Dspring.profiles.active=development)
+    _startsWithSlash_='^\/.*$'
+    if [[ $APP_CONF =~ $_startsWithSlash_ ]]; then
+        RUN_CMD+=(-Dconfig.file=$APP_CONF)
+    else
+        RUN_CMD+=(-Dconfig.file=$APP_HOME/conf/$APP_CONF)
+    fi
+    if [[ $APP_SPRING_CONF =~ $_startsWithSlash_ ]]; then
+        RUN_CMD+=(-Dspring.config.file=$APP_SPRING_CONF)
+    else
+        RUN_CMD+=(-Dspring.config.file=$APP_HOME/conf/$APP_SPRING_CONF)
+    fi
     RUN_CMD+=($JVM_EXTRA_OPS)
 
     "${RUN_CMD[@]}" &
@@ -85,19 +99,21 @@ doStart() {
     echo "APP_MEM      : $APP_MEM"
     echo "APP_PORT     : $APP_PORT"
     echo "THRIFT_PORT  : $THRIFT_PORT"
-    echo "APP_CONF     : $APP_HOME/conf/$APP_CONF"
+    echo "APP_CONF     : $APP_CONF"
+    echo "SPRING_CONF  : $APP_SPRING_CONF"
     echo "APP_PID      : $APP_PID"
     echo "JVM_EXTRA_OPS: $JVM_EXTRA_OPS"
 }
 
 usageAndExit() {
-    echo "Usage: ${0##*/} <{start|stop}> [-m <JVM memory limit in mb>] [-p <http port>] [-t <thrift port>] [-c <custom configuration file>] [-j "<extra jvm options>"]"
+    echo "Usage: ${0##*/} <{start|stop}> [-m <JVM memory limit in mb>] [-p <http port>] [-t <thrift port>] [-c <custom app config file>] [-s <custom spring config file>] [-j "<extra jvm options>"]"
     echo "    stop : stop the server"
     echo "    start: start the server"
     echo "       -m : JVM memory limit in mb (default $DEFAULT_APP_MEM)"
     echo "       -p : Http port for REST APIs (default $DEFAULT_APP_PORT)"
     echo "       -t : Thrift port for Thrift APIs (default $DEFAULT_THRIFT_PORT)"
-    echo "       -c : Custom configuration file, file is loaded under directory ./conf (default $DEFAULT_APP_CONF)"
+    echo "       -c : Custom application configuration file, relative file is loaded under directory ./conf (default $DEFAULT_APP_CONF)"
+    echo "       -s : Custom spring configuration file, relative file is loaded under directory ./conf (default $DEFAULT_APP_SPRING_CONF)"
     echo "       -j : Extra JVM options (example: -Djava.rmi.server.hostname=localhost)"
     echo
     echo "Example: start server 64mb memory limit, with custom configuration file"
@@ -148,6 +164,10 @@ while [ "$1" != "" ]; do
 
         -c)
             APP_CONF=$VALUE
+            ;;
+
+        -s)
+            APP_SPRING_CONF=$VALUE
             ;;
 
         -j)

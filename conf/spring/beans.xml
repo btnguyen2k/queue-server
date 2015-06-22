@@ -14,16 +14,22 @@
 		init-method="init" destroy-method="destroy" lazy-init="false">
 	</bean>
 	<!-- Global stats: un-comment bean TSC_GLOBAL to enable global stats/counters 
-		(e.g. in case there are more than 1 running bloom-server for load balancing) -->
+		(e.g. in case there are more than 1 running queue-server for load balancing) -->
 	<!-- <bean id="TSC_GLOBAL" class="com.github.ddth.tsc.redis.RedisCounterFactory" 
 		init-method="init" destroy-method="destroy" lazy-init="false"> <property 
-		name="host" value="localhost" /> <property name="port" value="6379" /> <property 
-		name="redisPoolConfig"> <bean class="com.github.ddth.redis.PoolConfig"> <property 
-		name="maxActive" value="2" /> <property name="minIdle" value="1" /> </bean> 
-		</property> </bean> -->
+		name="host" ref="_tscRedisHost" /> <property name="port" ref="_tscRedisPort" 
+		/> <property name="redisPoolConfig"> <bean class="com.github.ddth.redis.PoolConfig"> 
+		<property name="maxActive" value="2" /> <property name="minIdle" value="1" 
+		/> </bean> </property> </bean> -->
 
 	<bean id="QUEUE_API" class="queue.MySQLQueueApi" lazy-init="false"
 		init-method="init" destroy-method="destroy" scope="singleton">
+		<property name="tableMetadata" value="queue_metadata" />
+		<property name="orphanMessagePolicy">
+			<!-- Either ORPHAN_MESSAGE_POLICY_DISCARD or ORPHAN_MESSAGE_POLICY_REQUEUE -->
+			<util:constant static-field="queue.QueueApi.ORPHAN_MESSAGE_POLICY_DISCARD" />
+		</property>
+		<property name="orphanMessageThresholdMs" value="10000" />
 		<property name="dataSource">
 			<bean id="DATASOURCE_QUEUE" class="org.apache.commons.dbcp2.BasicDataSource"
 				destroy-method="close">
@@ -53,6 +59,13 @@
 
 	<!-- beans for development env -->
 	<beans>
+		<bean name="_tscRedisHost" class="java.lang.String">
+			<constructor-arg value="localhost" />
+		</bean>
+		<bean name="_tscRedisPort" class="java.lang.Integer">
+			<constructor-arg value="6379" />
+		</bean>
+
 		<bean name="_db_url_queue" class="java.lang.String">
 			<constructor-arg
 				value="jdbc:mysql://localhost:3306/temp?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8" />
@@ -67,6 +80,13 @@
 
 	<!-- beans for production env -->
 	<beans profile="prod,production">
+		<bean name="_tscRedisHost" class="java.lang.String">
+			<constructor-arg value="localhost" />
+		</bean>
+		<bean name="_tscRedisPort" class="java.lang.Integer">
+			<constructor-arg value="6379" />
+		</bean>
+
 		<bean name="_db_url_queue" class="java.lang.String">
 			<constructor-arg
 				value="jdbc:mysql://localhost:3306/temp?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8" />

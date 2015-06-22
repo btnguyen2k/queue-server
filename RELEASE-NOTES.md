@@ -1,7 +1,14 @@
 Queue Server Release Notes
 ==========================
 
-Bloom Filter Server - by btnguyen2k.
+Queue Server - by btnguyen2k.
+
+2015-06-22: v0.2.0
+------------------
+- Support PostgreSQL backend (new class `PgSQLQueueApi`).
+- Start/Stop script updated: support custom application config & spring config files.
+- Document review & fix.
+
 
 2015-06-16: v0.1.0
 ------------------

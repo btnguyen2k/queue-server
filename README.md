@@ -166,10 +166,6 @@ Start server with default options:
 Start server with 1024M memory limit, REST & Thrift-over-HTTP APIs on port 18080, Thrift APIs on port 19090
 > `/usr/local/queue-server/conf/server-production.sh start -m 1024 -p 18080 -t 19090`
 
-Set thrift port to 0 (`-t 0`) to disable Thrift APIs.
-
-Default port for REST & Thrift-over-HTTP requests is `8080` and `9090` is the default port for Thrift requests (both port numbers are configurable).
-
 Stop server:
 > `/usr/local/queue-server/conf/server-production.sh stop`
 
@@ -178,19 +174,32 @@ Stop server:
 
 ### Start Script ###
 
-> *-p port_number*: set port number for REST & Thrift-over-HTTP APIs. Example: *-m 18080*.
+Custom port numbers:
+> ***-p port_number***: set port number for REST & Thrift-over-HTTP APIs. Example: *-m 18080*.
 
-> *-t port_number*: set port number for Thrift APIs. Example: *-t 19090*. Note: *-t 0* will disable Thrift APIs.
+> ***-t port_number***: set port number for Thrift APIs. Example: *-t 19090*. Note: *-t 0* will disable Thrift APIs.
 
-> *-m mem_in_mb*: set server's memory limit (unit: Megabytes). Example: *-m 1024*.
+Memory limit:
+> ***-m mem_in_mb***: set server's memory limit (unit: Megabytes). Example: *-m 1024*.
 
-> *-c config_file*: set custom application configuration file, relative file is loaded under directory *${app.home}/conf*.
+Custom configuration files:
+> ***-c config_file***: set custom application configuration file, relative file is loaded under directory *${app.home}/conf*.
 >
 > Example *-c abc.conf*: use configuration file *${app.home}/conf/abc.conf*
 >
 > Example *-c /myapp/conf/abc.conf*: use configuration file */myapp/conf/abc.conf*
 
-See file(s) `conf/application.conf` and `conf/spring/beans.xml`.
+> ***-s config_file***: set custom spring configuration file, relative file is loaded under directory *${app.home}/conf*.
+>
+> Example *-c spring/beans.xml*: use configuration file *${app.home}/conf/spring/beans.xml*
+>
+> Example *-c /myapp/spring/beans.xml*: use configuration file */myapp/spring/beans.xml*
+
+### SPring Configuration Files ###
+
+Default file: `${app.home}/conf/spring/beans.xml`
+
+
 
 
 ## License ##
