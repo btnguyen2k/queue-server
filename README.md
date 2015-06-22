@@ -1,7 +1,7 @@
 Queue Server
 ============
 
-Queue Filter Server - by btnguyen2k.
+Queue Server - by btnguyen2k.
 
 Project home: [https://github.com/btnguyen2k/queue-server](https://github.com/btnguyen2k/queue-server).
 
@@ -12,11 +12,11 @@ Queue service that unifies various queue backends into a single API set.
 *Features:*
 
 - Client-server model.
-- API sets for Thrift, Thrift-over-HTTP and REST APIs.
+- API sets for Thrift, Thrift-over-HTTP and REST.
 - Data format (for REST APIs): JSON
 - Simple authorization scheme for API calls.
 
-*Message format*
+*Message format (JSON fields)*
 
 - `queue_id`: (long) message's unique id in queue.
 - `org_timestamp`: (long) UNIX timestamp (in milliseconds) when the message was first queued.
@@ -165,6 +165,7 @@ Start server with default options:
 
 Start server with 1024M memory limit, REST & Thrift-over-HTTP APIs on port 18080, Thrift APIs on port 19090
 > `/usr/local/queue-server/conf/server-production.sh start -m 1024 -p 18080 -t 19090`
+
 Set thrift port to 0 (`-t 0`) to disable Thrift APIs.
 
 Default port for REST & Thrift-over-HTTP requests is `8080` and `9090` is the default port for Thrift requests (both port numbers are configurable).
@@ -174,6 +175,20 @@ Stop server:
 
 
 ## Configurations ##
+
+### Start Script ###
+
+> *-p port_number*: set port number for REST & Thrift-over-HTTP APIs. Example: *-m 18080*.
+
+> *-t port_number*: set port number for Thrift APIs. Example: *-t 19090*. Note: *-t 0* will disable Thrift APIs.
+
+> *-m mem_in_mb*: set server's memory limit (unit: Megabytes). Example: *-m 1024*.
+
+> *-c config_file*: set custom application configuration file, relative file is loaded under directory *${app.home}/conf*.
+>
+> Example *-c abc.conf*: use configuration file *${app.home}/conf/abc.conf*
+>
+> Example *-c /myapp/conf/abc.conf*: use configuration file */myapp/conf/abc.conf*
 
 See file(s) `conf/application.conf` and `conf/spring/beans.xml`.
 
