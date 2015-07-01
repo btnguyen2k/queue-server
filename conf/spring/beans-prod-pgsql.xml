@@ -9,6 +9,9 @@
                            http://www.springframework.org/schema/util 
                            http://www.springframework.org/schema/util/spring-util.xsd">
 
+	<!-- Env : Production -->
+	<!-- Impl: PgSQL -->
+
 	<!-- Local stats/counters -->
 	<bean id="TSC_LOCAL" class="com.github.ddth.tsc.mem.InmemCounterFactory"
 		init-method="init" destroy-method="destroy" lazy-init="false">
@@ -22,42 +25,58 @@
 		<property name="maxActive" value="2" /> <property name="minIdle" value="1" 
 		/> </bean> </property> </bean> -->
 
-	<bean id="QUEUE_API" class="queue.RedisQueueApi" lazy-init="false"
+	<bean id="QUEUE_API" class="queue.PgSQLQueueApi" lazy-init="false"
 		init-method="init" destroy-method="destroy" scope="singleton">
-		<property name="metadataRedisHashName" value="queue_metadata" />
-		<property name="redisHostAndPort" ref="_redisHostAndPort" />
+		<!-- name of metadata db table -->
+		<property name="tableMetadata" value="queue_metadata" />
 		<property name="orphanMessagePolicy">
 			<!-- Either ORPHAN_MESSAGE_POLICY_DISCARD or ORPHAN_MESSAGE_POLICY_REQUEUE -->
 			<util:constant static-field="queue.QueueApi.ORPHAN_MESSAGE_POLICY_DISCARD" />
 		</property>
 		<property name="orphanMessageThresholdMs" value="10000" />
+		<property name="dataSource">
+			<bean id="DATASOURCE_QUEUE" class="org.apache.commons.dbcp2.BasicDataSource"
+				destroy-method="close">
+				<property name="driverClassName" value="org.postgresql.Driver" />
+				<property name="url" ref="_db_url_queue" />
+				<property name="username" ref="_db_user_queue" />
+				<property name="password" ref="_db_password_queue" />
+				<property name="defaultAutoCommit" value="false" />
+				<property name="initialSize" value="1" />
+				<property name="minIdle" value="1" />
+				<property name="maxTotal" value="8" />
+				<property name="maxConnLifetimeMillis" value="180000" />
+				<property name="maxWaitMillis" value="10000" />
+				<property name="poolPreparedStatements" value="false" />
+				<property name="testOnBorrow" value="true" />
+				<property name="testWhileIdle" value="true" />
+				<property name="validationQuery" value="SELECT 1" />
+				<property name="validationQueryTimeout" value="1" />
+			</bean>
+		</property>
 	</bean>
 
 	<!-- beans for development env -->
 	<beans>
-		<bean name="_redisHostAndPort" class="java.lang.String">
-			<constructor-arg value="localhost:6379" />
-		</bean>
-
-		<bean name="_tscRedisHost" class="java.lang.String">
-			<constructor-arg value="localhost" />
-		</bean>
-		<bean name="_tscRedisPort" class="java.lang.Integer">
-			<constructor-arg value="6379" />
-		</bean>
 	</beans>
 
 	<!-- beans for production env -->
 	<beans profile="prod,production">
-		<bean name="_redisHostAndPort" class="java.lang.String">
-			<constructor-arg value="localhost:6379" />
-		</bean>
-
 		<bean name="_tscRedisHost" class="java.lang.String">
 			<constructor-arg value="localhost" />
 		</bean>
 		<bean name="_tscRedisPort" class="java.lang.Integer">
 			<constructor-arg value="6379" />
+		</bean>
+
+		<bean name="_db_url_queue" class="java.lang.String">
+			<constructor-arg value="jdbc:postgresql://localhost:5432/temp" />
+		</bean>
+		<bean name="_db_user_queue" class="java.lang.String">
+			<constructor-arg value="test" />
+		</bean>
+		<bean name="_db_password_queue" class="java.lang.String">
+			<constructor-arg value="test" />
 		</bean>
 	</beans>
 </beans>

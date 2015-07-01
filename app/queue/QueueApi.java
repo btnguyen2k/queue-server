@@ -27,16 +27,6 @@ import com.google.common.cache.RemovalNotification;
 public abstract class QueueApi {
 
     /*----------------------------------------------------------------------*/
-    private String tableMetadata = "queue_metadata";
-
-    public String getTableMetadata() {
-        return tableMetadata;
-    }
-
-    public QueueApi setTableMetadata(String tableMetadata) {
-        this.tableMetadata = tableMetadata;
-        return this;
-    }
 
     protected abstract boolean initQueueMetadata(String queueName);
 
@@ -73,19 +63,26 @@ public abstract class QueueApi {
                 String queueName = check.pollFirst();
                 while (queueName != null) {
                     final String normalizedQueueName = normalizeQueueName(queueName);
+                    if (Logger.isDebugEnabled()) {
+                        Logger.debug("Checking orphan messages for [" + normalizedQueueName
+                                + "]...");
+                    }
                     executorService.execute(new Runnable() {
                         @Override
                         public void run() {
                             IQsQueue queue = getQueue(normalizedQueueName);
                             if (queue != null) {
+                                long threshold = System.currentTimeMillis()
+                                        - getOrphanMessageThresholdMs();
                                 Collection<IQueueMessage> orphanMsgs = queue
-                                        .getOrphanMessages(getOrphanMessageThresholdMs());
+                                        .getOrphanMessages(threshold);
                                 if (orphanMsgs != null) {
                                     for (IQueueMessage msg : orphanMsgs) {
                                         if (orphanMessagePolicy == ORPHAN_MESSAGE_POLICY_DISCARD) {
                                             Logger.info(MessageFormat
                                                     .format("Discarding orphan message [{0}] from queue [{1}]...",
-                                                            msg.qId(), normalizedQueueName));
+                                                            String.valueOf(msg.qId()),
+                                                            normalizedQueueName));
                                             queue.finish(msg);
                                         } else {
                                             Logger.info(MessageFormat
@@ -105,7 +102,13 @@ public abstract class QueueApi {
                 }
 
                 try {
-                    Thread.sleep(Math.min(10000, getOrphanMessageThresholdMs()) / 2);
+                    long duration = Math.min(10000, getOrphanMessageThresholdMs()) / 2;
+                    // if (Logger.isDebugEnabled()) {
+                    // Logger.debug("Check orphan messages thread: slepping for ["
+                    // + duration
+                    // + "] ms...");
+                    // }
+                    Thread.sleep(duration);
                 } catch (InterruptedException e) {
                 }
             }
@@ -347,6 +350,9 @@ public abstract class QueueApi {
             QueueMessage result = queue.take();
             if (result != null) {
                 check.add(queueName);
+                if (Logger.isDebugEnabled()) {
+                    Logger.debug("Schedule to check orphan messages for queue [" + queueName + "]");
+                }
             }
             return result;
         }

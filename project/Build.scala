@@ -32,7 +32,7 @@ object ApplicationBuild extends Build {
         "com.github.ddth"            %  "ddth-tsc"               % _tscVersion,
         "com.github.ddth"            %  "ddth-tsc-redis"         % _tscVersion,
         "com.github.ddth"            %  "ddth-dao"               % "0.4.0.2",
-        "com.github.ddth"            %  "ddth-queue"             % "0.3.0",
+        "com.github.ddth"            %  "ddth-queue"             % "0.3.1",
 
         "com.yammer.metrics"         %  "metrics-core"           % "2.2.0" % "test",
         "com.github.ddth"            %  "ddth-thriftpool"        % "0.1.0" % "test",

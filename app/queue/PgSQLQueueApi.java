@@ -33,6 +33,7 @@ import play.Logger;
  *     msg_content                 BYTEA,
  *     PRIMARY KEY (queue_id)
  * );
+ * CREATE INDEX queue_ephemeral_msg_timestamp ON queue_ephemeral(msg_timestamp);
  * </pre>
  * 
  * @author Thanh Nguyen <btnguyen2k@gmail.com>
@@ -59,11 +60,6 @@ public class PgSQLQueueApi extends JdbcQueueApi {
                         + "msg_timestamp TIMESTAMP NOT NULL,"
                         + "msg_num_requeues INT NOT NULL DEFAULT 0," + "msg_content BYTEA,"
                         + "PRIMARY KEY (queue_id))";
-                final String SQL_CREATE_EPHEMERAL = "CREATE TABLE {0} (queue_id BIGINT,"
-                        + "msg_org_timestamp TIMESTAMP NOT NULL,"
-                        + "msg_timestamp TIMESTAMP NOT NULL,"
-                        + "msg_num_requeues INT NOT NULL DEFAULT 0," + "msg_content BYTEA,"
-                        + "PRIMARY KEY (queue_id))";
                 JdbcTemplate jdbcTemplate = jdbcTemplate(conn);
                 try {
                     String tableName = "queue_" + normalizedQueueName;
@@ -73,6 +69,12 @@ public class PgSQLQueueApi extends JdbcQueueApi {
                 } catch (Exception e) {
                     Logger.warn(e.getMessage(), e);
                 }
+
+                final String SQL_CREATE_EPHEMERAL = "CREATE TABLE {0} (queue_id BIGINT,"
+                        + "msg_org_timestamp TIMESTAMP NOT NULL,"
+                        + "msg_timestamp TIMESTAMP NOT NULL,"
+                        + "msg_num_requeues INT NOT NULL DEFAULT 0," + "msg_content BYTEA,"
+                        + "PRIMARY KEY (queue_id))";
                 try {
                     String tableName = "queue_" + normalizedQueueName + "_ephemeral";
                     jdbcTemplate.execute(MessageFormat.format(SQL_CREATE_EPHEMERAL, tableName));
@@ -81,6 +83,18 @@ public class PgSQLQueueApi extends JdbcQueueApi {
                 } catch (Exception e) {
                     Logger.warn(e.getMessage(), e);
                 }
+
+                final String SQL_CREATE_EPHEMERAL_INDEX = "CREATE INDEX {0}_msg_timestamp ON {0}(msg_timestamp)";
+                try {
+                    String tableName = "queue_" + normalizedQueueName + "_ephemeral";
+                    jdbcTemplate.execute(MessageFormat
+                            .format(SQL_CREATE_EPHEMERAL_INDEX, tableName));
+                } catch (BadSqlGrammarException bsge) {
+                    // IGNORE
+                } catch (Exception e) {
+                    Logger.warn(e.getMessage(), e);
+                }
+
                 return queueExists(queueName) && initQueueMetadata(queueName);
             } finally {
                 conn.close();

@@ -14,6 +14,7 @@ CREATE TABLE queue_ephemeral (
         PRIMARY KEY (queue_id),
     msg_org_timestamp           DATETIME            NOT NULL            COMMENT "Message's original timestamp, when requeued original timestamp unchanged",
     msg_timestamp               DATETIME            NOT NULL            COMMENT "Message's queue timestamp",
+        INDEX (msg_timestamp),
     msg_num_requeues            INT                 NOT NULL DEFAULT 0  COMMENT "How many times message has been requeued",
     msg_content                 LONGBLOB
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;

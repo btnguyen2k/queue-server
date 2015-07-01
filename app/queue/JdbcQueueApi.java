@@ -29,7 +29,18 @@ import com.github.ddth.commons.utils.DPathUtils;
  */
 public abstract class JdbcQueueApi extends QueueApi {
 
+    private String tableMetadata = "queue_metadata";
+
     private DataSource dataSource;
+
+    public String getTableMetadata() {
+        return tableMetadata;
+    }
+
+    public QueueApi setTableMetadata(String tableMetadata) {
+        this.tableMetadata = tableMetadata;
+        return this;
+    }
 
     public DataSource getDataSource() {
         return dataSource;

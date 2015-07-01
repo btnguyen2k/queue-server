@@ -17,3 +17,4 @@ CREATE TABLE queue_ephemeral (
     msg_content                 BYTEA,
     PRIMARY KEY (queue_id)
 );
+CREATE INDEX queue_ephemeral_msg_timestamp ON queue_ephemeral(msg_timestamp);

@@ -8,7 +8,8 @@
 # -t <thrift_port>                 #
 # -m <mem in mb>                   #
 # -c <config_file.conf>            #
-# -s <spring_config_file.conf>     #
+# -s <spring_config_file.xml>      #
+# -l <log_config_file.xml>         #
 # -j "extra-jvm-options"           #
 # -------------------------------- #
 
@@ -26,12 +27,14 @@ DEFAULT_THRIFT_PORT=9090
 DEFAULT_APP_MEM=128
 DEFAULT_APP_CONF=application-production.conf
 DEFAULT_APP_SPRING_CONF=spring/beans.xml
+DEFAULT_APP_LOG_CONF=application-logger-production.xml
 
 APP_PORT=$DEFAULT_APP_PORT
 THRIFT_PORT=$DEFAULT_THRIFT_PORT
 APP_MEM=$DEFAULT_APP_MEM
 APP_CONF=$DEFAULT_APP_CONF
 APP_SPRING_CONF=$DEFAULT_APP_SPRING_CONF
+APP_LOG_CONF=$DEFAULT_APP_LOG_CONF
 
 JVM_EXTRA_OPS=
 
@@ -73,21 +76,61 @@ doStart() {
             rm -f "$APP_PID"
         fi
     fi
+    
+    _startsWithSlash_='^\/.*$'
+
+    if [ "$APP_CONF" == "" ]; then
+        echo "Empty App config file"
+        exit 1
+    else
+        if [[ $APP_CONF =~ $_startsWithSlash_ ]]; then
+            FINAL_APP_CONF=$APP_CONF
+        else
+            FINAL_APP_CONF=$APP_HOME/conf/$APP_CONF
+        fi
+
+        if [ ! -f "$FINAL_APP_CONF" ]; then
+            echo "App config file not found: $FINAL_APP_CONF"
+            exit 1
+        fi
+    fi
+    
+    if [ "$APP_SPRING_CONF" == "" ]; then
+        echo "Empty Spring config file"
+        exit 1
+    else
+        if [[ $APP_SPRING_CONF =~ $_startsWithSlash_ ]]; then
+            FINAL_APP_SPRING_CONF=$APP_SPRING_CONF
+        else
+            FINAL_APP_SPRING_CONF=$APP_HOME/conf/$APP_SPRING_CONF
+        fi
+
+        if [ ! -f "$FINAL_APP_SPRING_CONF" ]; then
+            echo "Spring config file not found: $FINAL_APP_SPRING_CONF"
+            exit 1
+        fi
+    fi
+
+    if [ "$APP_LOG_CONF" == "" ]; then
+        echo "Empty Log config file"
+        exit 1
+    else
+        if [[ $APP_LOG_CONF =~ $_startsWithSlash_ ]]; then
+            FINAL_APP_LOG_CONF=$APP_LOG_CONF
+        else
+            FINAL_APP_LOG_CONF=$APP_HOME/conf/$APP_LOG_CONF
+        fi
+
+        if [ ! -f "$FINAL_APP_LOG_CONF" ]; then
+            echo "Log config file not found: $FINAL_APP_LOG_CONF"
+            exit 1
+        fi
+    fi
 
     RUN_CMD=($APP_HOME/bin/$APP_NAME -Dapp.home=$APP_HOME -Dthrift.port=$THRIFT_PORT -Dhttp.port=$APP_PORT -Dhttp.address=0.0.0.0)
     RUN_CMD+=(-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -J-server -mem $APP_MEM)
-    RUN_CMD+=(-Dspring.profiles.active=production -Dlogger.file=$APP_HOME/conf/application-logger-production.xml)
-    _startsWithSlash_='^\/.*$'
-    if [[ $APP_CONF =~ $_startsWithSlash_ ]]; then
-        RUN_CMD+=(-Dconfig.file=$APP_CONF)
-    else
-        RUN_CMD+=(-Dconfig.file=$APP_HOME/conf/$APP_CONF)
-    fi
-    if [[ $APP_SPRING_CONF =~ $_startsWithSlash_ ]]; then
-        RUN_CMD+=(-Dspring.config.file=$APP_SPRING_CONF)
-    else
-        RUN_CMD+=(-Dspring.config.file=$APP_HOME/conf/$APP_SPRING_CONF)
-    fi
+    RUN_CMD+=(-Dspring.profiles.active=production)
+    RUN_CMD+=(-Dconfig.file=$FINAL_APP_CONF -Dspring.config.file=$FINAL_APP_SPRING_CONF -Dlogger.file=$FINAL_APP_LOG_CONF)
     RUN_CMD+=($JVM_EXTRA_OPS)
 
     "${RUN_CMD[@]}" &
@@ -96,24 +139,26 @@ doStart() {
     
     echo "STARTED $APP_NAME `date`"
     
-    echo "APP_MEM      : $APP_MEM"
-    echo "APP_PORT     : $APP_PORT"
-    echo "THRIFT_PORT  : $THRIFT_PORT"
-    echo "APP_CONF     : $APP_CONF"
-    echo "SPRING_CONF  : $APP_SPRING_CONF"
-    echo "APP_PID      : $APP_PID"
-    echo "JVM_EXTRA_OPS: $JVM_EXTRA_OPS"
+    echo "APP_MEM         : $APP_MEM"
+    echo "APP_PORT        : $APP_PORT"
+    echo "THRIFT_PORT     : $THRIFT_PORT"
+    echo "APP_CONF        : $FINAL_APP_CONF"
+    echo "APP_SPRING_CONF : $FINAL_APP_SPRING_CONF"
+    echo "APP_LOG_CONF    : $FINAL_APP_LOG_CONF"
+    echo "APP_PID         : $APP_PID"
+    echo "JVM_EXTRA_OPS   : $JVM_EXTRA_OPS"
 }
 
 usageAndExit() {
-    echo "Usage: ${0##*/} <{start|stop}> [-m <JVM memory limit in mb>] [-p <http port>] [-t <thrift port>] [-c <custom app config file>] [-s <custom spring config file>] [-j "<extra jvm options>"]"
+    echo "Usage: ${0##*/} <{start|stop}> [-m <JVM memory limit in mb>] [-p <http port>] [-t <thrift port>] [-c <custom app config file>] [-s <custom spring config file>] [-l <custom log config file>] [-j "<extra jvm options>"]"
     echo "    stop : stop the server"
     echo "    start: start the server"
     echo "       -m : JVM memory limit in mb (default $DEFAULT_APP_MEM)"
     echo "       -p : Http port for REST APIs (default $DEFAULT_APP_PORT)"
     echo "       -t : Thrift port for Thrift APIs (default $DEFAULT_THRIFT_PORT)"
-    echo "       -c : Custom application configuration file, relative file is loaded under directory ./conf (default $DEFAULT_APP_CONF)"
-    echo "       -s : Custom spring configuration file, relative file is loaded under directory ./conf (default $DEFAULT_APP_SPRING_CONF)"
+    echo "       -c : Custom app config file, relative file is prefixed with ./conf (default $DEFAULT_APP_CONF)"
+    echo "       -s : Custom Spring config file, relative file is prefixed with ./conf (default $DEFAULT_APP_SPRING_CONF)"
+    echo "       -l : Custom log config file, relative file is prefixed with ./conf (default $DEFAULT_APP_LOG_CONF)"
     echo "       -j : Extra JVM options (example: -Djava.rmi.server.hostname=localhost)"
     echo
     echo "Example: start server 64mb memory limit, with custom configuration file"
@@ -168,6 +213,10 @@ while [ "$1" != "" ]; do
 
         -s)
             APP_SPRING_CONF=$VALUE
+            ;;
+
+        -l)
+            APP_LOG_CONF=$VALUE
             ;;
 
         -j)

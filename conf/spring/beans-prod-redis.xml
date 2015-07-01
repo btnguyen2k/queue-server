@@ -9,6 +9,9 @@
                            http://www.springframework.org/schema/util 
                            http://www.springframework.org/schema/util/spring-util.xsd">
 
+    <!-- Env : Production -->
+    <!-- Impl: Redis -->
+
 	<!-- Local stats/counters -->
 	<bean id="TSC_LOCAL" class="com.github.ddth.tsc.mem.InmemCounterFactory"
 		init-method="init" destroy-method="destroy" lazy-init="false">

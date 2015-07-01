@@ -30,6 +30,7 @@ import play.Logger;
  *       PRIMARY KEY (queue_id),
  *   msg_org_timestamp           DATETIME            NOT NULL,
  *   msg_timestamp               DATETIME            NOT NULL,
+ *       INDEX (msg_timestamp),
  *   msg_num_requeues            INT                 NOT NULL DEFAULT 0,
  *   msg_content                 LONGBLOB
  * ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
@@ -62,7 +63,7 @@ public class MySQLQueueApi extends JdbcQueueApi {
                         + "ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci";
                 final String SQL_CREATE_EPHEMERAL = "CREATE TABLE {0} (queue_id BIGINT, PRIMARY KEY (queue_id),"
                         + "msg_org_timestamp DATETIME NOT NULL,"
-                        + "msg_timestamp DATETIME NOT NULL,"
+                        + "msg_timestamp DATETIME NOT NULL,INDEX (msg_timestamp),"
                         + "msg_num_requeues INT NOT NULL DEFAULT 0,"
                         + "msg_content LONGBLOB)"
                         + "ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci";

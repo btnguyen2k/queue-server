@@ -33,7 +33,6 @@ public class Application extends BaseController {
             responseData.put(Constants.RESPONSE_FIELD_VALUE, value);
         }
         response().setHeader(CONTENT_TYPE, "application/json");
-        response().setHeader(CONTENT_ENCODING, "utf-8");
         Registry.updateCounters(status);
         return ok(SerializationUtils.toJsonString(responseData));
     }
