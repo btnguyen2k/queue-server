@@ -27,7 +27,7 @@ Queue service that unifies various queue backends into a single API set.
 
 ## Release-notes ##
 
-Latest release: `0.1.0`.
+Latest release: `0.3.0`.
 
 See [RELEASE-NOTES.md](RELEASE-NOTES.md).
 
@@ -200,10 +200,8 @@ Custom configuration files:
 Default file: `${app.home}/conf/spring/beans.xml`
 
 
-
-
 ## License ##
 
-See [LICENSE.txt](LICENSE.txt) for details. Copyright (c) 2015 btnguyen2k.
+See [LICENSE.txt](LICENSE.txt) for details. Copyright (c) 2015-2016 btnguyen2k.
 
 Third party libraries are distributed under their own license(s).

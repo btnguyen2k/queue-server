@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2015 btnguyen2k
+Copyright (c) 2015-2016 btnguyen2k
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

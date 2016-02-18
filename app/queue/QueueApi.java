@@ -145,7 +145,7 @@ public abstract class QueueApi {
 
     private int orphanMessagePolicy = ORPHAN_MESSAGE_POLICY_DISCARD;
 
-    private long orphanMessageThresholdMs = 10000; // default 10 seconds
+    private long orphanMessageThresholdMs = 60000; // default 60 seconds
 
     /**
      * Number of milliseconds before a message is marked orphan.
