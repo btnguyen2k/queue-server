@@ -2,6 +2,7 @@ package globals;
 
 import java.io.File;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.server.TServer;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -216,12 +217,15 @@ public class Registry {
 
     synchronized private static void initApplicationContext() {
         if (Registry.applicationContext == null) {
-            String configFile = "conf/spring/beans.xml";
-            File springConfigFile = new File(Play.application().path(), configFile);
-            AbstractApplicationContext applicationContext = new FileSystemXmlApplicationContext(
-                    "file:" + springConfigFile.getAbsolutePath());
-            applicationContext.start();
-            Registry.applicationContext = applicationContext;
+            String configFile = System.getProperty("spring.config.file", "conf/spring/beans.xml");
+            if (!StringUtils.isEmpty(configFile)) {
+                File springConfigFile = configFile.startsWith("/") ? new File(configFile)
+                        : new File(Play.application().path(), configFile);
+                AbstractApplicationContext applicationContext = new FileSystemXmlApplicationContext(
+                        "file:" + springConfigFile.getAbsolutePath());
+                applicationContext.start();
+                Registry.applicationContext = applicationContext;
+            }
         }
     }
 

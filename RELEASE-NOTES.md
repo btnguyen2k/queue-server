@@ -3,7 +3,7 @@ Queue Server Release Notes
 
 Queue Server - by btnguyen2k.
 
-2016-02-18: v0.3.0
+2016-02-18: v0.3.1
 ------------------
 
 - Support Redis backend (new class `RedisQueueApi`).

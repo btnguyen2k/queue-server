@@ -27,7 +27,7 @@ Queue service that unifies various queue backends into a single API set.
 
 ## Release-notes ##
 
-Latest release: `0.3.0`.
+Latest release: `0.3.1`.
 
 See [RELEASE-NOTES.md](RELEASE-NOTES.md).
 
