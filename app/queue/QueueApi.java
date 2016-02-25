@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import play.Logger;
 import queue.internal.QueueMessage;
 
@@ -215,6 +217,9 @@ public abstract class QueueApi {
      * @return
      */
     public boolean isValidQueueName(String queueName) {
+        if (StringUtils.isBlank(queueName)) {
+            return false;
+        }
         String normalizeQueueName = normalizeQueueName(queueName);
         return normalizeQueueName.matches("^[a-z0-9]+$");
     }
@@ -256,7 +261,7 @@ public abstract class QueueApi {
      * @return
      */
     protected String normalizeQueueName(String queueName) {
-        return queueName.trim().toLowerCase();
+        return queueName != null ? queueName.trim().toLowerCase() : null;
     }
 
     /*----------------------------------------------------------------------*/

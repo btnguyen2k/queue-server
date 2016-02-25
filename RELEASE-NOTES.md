@@ -3,6 +3,11 @@ Queue Server Release Notes
 
 Queue Server - by btnguyen2k.
 
+2016-02-25: v0.3.2
+------------------
+
+- NPE fix
+
 2016-02-18: v0.3.1
 ------------------
 
